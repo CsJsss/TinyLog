@@ -12,8 +12,8 @@
 #define __TINYLOG_INCLUDE_ASYNLOG_H_
 
 #include "include/CountDownLatch.h"
-#include "include/buffer.h"
-#include "include/logConfig.h"
+#include "include/Buffer.h"
+#include "include/LogConfig.h"
 #include "include/noncopyable.h"
 #include <atomic>
 #include <cassert>
@@ -47,7 +47,9 @@ public:
   void append(const char *_msg, size_t _len);
 
   void start() {
-    assert(started_ == false);
+    // assert(started_ == false);
+    if (counter_.getCount() == 0)
+      return ;
     started_ = true;
     thread_ = std::thread(&AsynLog::threadFunc, this);
     counter_.wait();

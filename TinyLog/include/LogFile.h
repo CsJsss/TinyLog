@@ -13,47 +13,32 @@
 #define __TINYLOG_INCLUDE_LOGFILE_H_
 
 #include "include/noncopyable.h"
+#include "include/FileWriter.h"
 #include <memory>
 #include <mutex>
 #include <string>
 
 namespace TinyLog {
 
-
-/* 抽象类 */
-class FileUtil {
-public:
-    FileUtil () = default;
-    virtual ~FileUtil () = default; 
-    /* 纯虚函数 */
-    virtual void append (const char* _msg, size_t _len) = 0;
-    virtual void flush () = 0;
-    virtual void writtenBytes () const = 0;
-};
-
-enum FileUtilType {
-    MMAPFileUtil = 0,
-    NORMALFileUtil
-};
-
 class LogFile : noncopyable {
 public:
-    LogFile (const std::string &_basename, size_t _rollSize, int _flushInterval, FileUtilType _type) ;
+    LogFile (const std::string &_basename, size_t _rollSize, int _flushInterval, FileWriterType _fileWriterType) ;
     ~LogFile () = default;
     
     void append (const char* _msg, size_t _len);
     void flush () ;
-    bool rollFile() ;
+    void rollFile () ;
 
     /* 获取日志文件的名称 */
-    static std::string getLogFileName (const std::string& _basename, time_t* now) ;
+    static std::string getLogFileName (const std::string& _basename) ;
 
 private:
+    FileWriterType fileWriterType_;
     const std::string basename_;
     const size_t rollSize_;
     const int flushInterval_;
-
-    std::unique_ptr<FileUtil> file_;
+    /* File的独占指针 */
+    std::unique_ptr<FileWriter> file_;
 };
 
 }

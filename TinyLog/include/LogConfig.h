@@ -12,7 +12,7 @@
 #ifndef __TINYLOG_INCLUDE_LOGCONFIG_H_
 #define __TINYLOG_INCLUDE_LOGCONFIG_H_
 
-#include "include/logging.h"
+#include "include/Logging.h"
 
 namespace TinyLog {
 class LogConfig {

@@ -30,6 +30,11 @@ void CountDownLatch::countdown() {
     cv_.notify_all();
 }
 
+int CountDownLatch::getCount() {
+    std::unique_lock<std::mutex> lock(mtx_);
+    return count_;
+}
+
 } // namespace TinyLog
 
 #endif /* __TINYLOG_SRC_COUNTDOWNLATCH_H_ */

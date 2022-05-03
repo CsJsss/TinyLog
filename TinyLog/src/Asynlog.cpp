@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2022
  *
  */
-#include "include/asynlog.h"
-#include "include/logging.h"
+#include "include/AsynLog.h"
+#include "include/Logging.h"
 #include <cassert>
 #include <chrono>
 #include <memory>

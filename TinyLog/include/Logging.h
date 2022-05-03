@@ -12,7 +12,7 @@
 #define __TINYLOG_INCLUDE_LOGGING_H_
 
 #include "include/Timestamp.h"
-#include "include/buffer.h"
+#include "include/Buffer.h"
 #include "include/noncopyable.h"
 #include <ctime>
 #include <functional>

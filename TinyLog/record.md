@@ -14,14 +14,14 @@
 1. 编译期计算字符串长度
 
 
-2. 编译器将__LINE__转化成字符串
+2. 编译期将__LINE__转化成字符串
 
     [ref-Link](https://blog.csdn.net/tcmprogrammer/article/details/41014811)
 
 
 ## 遇到的问题和解决方法
 
-1. `thread_local`的初始化过程发送在其声明位置, 并且在该`thread`中只初始化一次, 其声明周期和线程的声明周期一致. 因此必须将``thread_local Buffer buffer`的声明放置在`append`函数中. 否则会出现如下错误:
+1. `thread_local`的初始化过程发送在其声明位置, 并且在该`thread`中只初始化一次, 其生命周期和生命的声明周期一致. 因此必须将``thread_local Buffer buffer`的声明放置在`append`函数中. 否则会出现如下错误:
 
 ```bash
  /usr/bin/ld: main.cpp:(.text._ZTWN7TinyLog6Logger6bufferE[_ZTWN7TinyLog6Logger6bufferE]+0x19): undefined reference to `TinyLog::Logger::buffer'

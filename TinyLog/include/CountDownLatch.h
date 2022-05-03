@@ -25,6 +25,8 @@ public:
 
   void countdown();
 
+  int getCount();
+
 private:
   /* 对于const对象也必须可以操作其mutex */
   mutable std::mutex mtx_;

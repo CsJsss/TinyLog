@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2022
  *
  */
-#include "include/threadInfo.h"
+#include "include/ThreadInfo.h"
 #include <unistd.h>
 
 namespace TinyLog ::ThreadInfo {
@@ -28,5 +28,14 @@ int getTid() {
 const char *getTidStr() { return tidStr; }
 
 size_t getTidStrlen() { return tidStrlen; }
+
+pid_t getPid() { return ::getpid(); }
+
+std::string getPidStr() {
+  return std::to_string(getPid());
+  // char buff[32];
+  // snprintf(buff, sizeof(buff), "%d", getPid());
+  // return buff;
+}
 
 } // namespace TinyLog::ThreadInfo

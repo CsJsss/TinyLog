@@ -9,10 +9,10 @@
  *
  */
 
-#include "include/logging.h"
+#include "include/Logging.h"
+#include "include/LogConfig.h"
+#include "include/ThreadInfo.h"
 #include "include/Timestamp.h"
-#include "include/logConfig.h"
-#include "include/threadInfo.h"
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
