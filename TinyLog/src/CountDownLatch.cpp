@@ -8,7 +8,6 @@
  * @copyright Copyright (c) 2022
  *
  */
-
 #ifndef __TINYLOG_SRC_COUNTDOWNLATCH_H_
 #define __TINYLOG_SRC_COUNTDOWNLATCH_H_
 

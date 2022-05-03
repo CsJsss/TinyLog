@@ -1,14 +1,13 @@
 /**
  * @file asynlog.cpp
  * @author Jsss (764527108@qq.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-02
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
-
 #include "include/asynlog.h"
 #include "include/logging.h"
 #include <cassert>

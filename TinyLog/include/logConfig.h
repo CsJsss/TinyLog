@@ -27,6 +27,7 @@ public:
     int flushInterval;
     /* 默认buffer个数 */
     int bufferNums = 4;
+    /* 写文件的具体方式 */
   };
 
   FileOptions fileOption;

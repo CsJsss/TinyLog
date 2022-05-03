@@ -6,7 +6,7 @@
 
 ```
 [日期]      [时间]    [毫秒]  [线程ID] [源文件[行号]]     - [日志级别] : [正文]
-2022-05-01  16:12:46  233     123456   test.py[line:200] - INFO: just test, hhh.
+2022-05-01  16:12:46  233     tid=123456   test.py[line:200] - INFO: just test, hhh.
 ```
 
 ### 优化
@@ -34,6 +34,8 @@
 
 [stack overflow的解决方法](https://stackoverflow.com/questions/61203655/how-to-printf-stdthis-threadget-id-in-c)
 可以考虑将其进行封装, 提供友好的接口进行格式化的输出.
+
+3. 可变参数模板的声明和实现分离, 导致其他文件必须include其实现文件.
 
 
 ## tips

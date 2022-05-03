@@ -11,6 +11,7 @@
 #ifndef __TINYLOG_INCLUDE_LOGGING_H_
 #define __TINYLOG_INCLUDE_LOGGING_H_
 
+#include "include/Timestamp.h"
 #include "include/buffer.h"
 #include "include/noncopyable.h"
 #include <ctime>
@@ -94,6 +95,9 @@ public:
   /* 设置LogConfig */
   static void setConfig(const LogConfig &);
 
+  /* 设置日志时间, 使用TLS进行缓存优化 */
+  static void formatTime();
+
   /* 供LOG_*系列宏使用, 将一条日志记录存入LineBuffer中 */
   template <typename... Args>
   void append(const char *file, size_t fileLen, const char *line,
@@ -108,8 +112,8 @@ private:
   ~Logger() = default;
 
   /* 线程局部变量, 对日期和时间部分进行缓存, 每个线程拥有独立的缓存*/
-  static thread_local time_t prevSecond;
-  static thread_local char timeStr[64];
+  // static thread_local time_t prevSecond;
+  // static thread_local char timeStr[64];
   // static thread_local Buffer buffer;
 };
 

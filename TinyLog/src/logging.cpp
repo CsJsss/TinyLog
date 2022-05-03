@@ -10,10 +10,13 @@
  */
 
 #include "include/logging.h"
+#include "include/Timestamp.h"
 #include "include/logConfig.h"
+#include "include/threadInfo.h"
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
 #include <mutex>
 
 namespace TinyLog {
@@ -24,8 +27,11 @@ LogConfig kLogConfig;
 /* Logger 单例变量的定义 */
 Logger *Logger::_logger = nullptr;
 std::mutex Logger::_mtx;
+
+/* 线程局部变量, 对日期和时间部分进行缓存, 每个线程拥有独立的缓存*/
 thread_local time_t prevSecond;
 thread_local char timeStr[64];
+thread_local Logger::Buffer buffer;
 
 Logger *Logger::getInstance() {
   /* 双检锁实现单例模式 */
@@ -64,14 +70,42 @@ inline void Logger::setConfig(const LogConfig &_config) {
   kLogConfig = _config;
 }
 
+/* 设置日志时间, 使用TLS进行缓存优化 */
+inline void Logger::formatTime() {
+  Timestamp current = Timestamp::now();
+  time_t curSecond = current.getSeconds();
+  int milliSecond = static_cast<int>(current.getMilliSeconds() %
+                                     Timestamp::kmilliSecondsPerSecond);
+  /* 无法使用TLS时间缓存进行优化 */
+  if (curSecond != prevSecond) {
+    prevSecond = curSecond;
+    /* 重新写入时间到TLS中 */
+    struct tm tm_time;
+    localtime_r(&curSecond, &tm_time);
+
+    snprintf(timeStr, sizeof(timeStr), "%4d%02d%02d %02d:%02d:%02d-",
+             tm_time.tm_year + 1900, tm_time.tm_mon + 1, tm_time.tm_mday,
+             tm_time.tm_hour, tm_time.tm_min, tm_time.tm_sec);
+  }
+  /* 写入日志行缓冲区中: 精确到秒 */
+  buffer.append(timeStr, 18);
+  /* 写入毫秒 */
+  char mStr[6];
+  snprintf(mStr, sizeof(mStr), "%03d ", milliSecond);
+  buffer.append(mStr, 4);
+}
+
 /* file和line在编译期获取其长度fileLen, lineLen */
 template <typename... Args>
 void Logger::append(const char *file, size_t fileLen, const char *line,
                     size_t lineLen, const char *fmt, Logger::LogLevel level,
                     Args &&...args) {
-  thread_local Buffer buffer;
   /* 处理日志中的时间 */
-  // TODO:
+  formatTime();
+
+  /* 添加线程号: ID*/
+  buffer.append("tid:", 4);
+  buffer.append(ThreadInfo::getTidStr(), ThreadInfo::getTidStrlen());
 
   /* 源文件[line:行号] - 日志级别
    *  example:
