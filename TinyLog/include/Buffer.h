@@ -34,7 +34,7 @@ public:
   void clear() {
     _cur = 0;
     // TODO: do we need this operation ?
-    memset(_data, 0, sizeof(_data));
+    // memset(_data, 0, sizeof(_data));?
   }
 
   size_t avail() const { return SIZE - _cur; }
@@ -47,7 +47,7 @@ public:
   void addLen(size_t len) { _cur += len; }
 
   void append(const char *_msg, size_t _len) {
-    if (avail() >= _len) {
+    if (avail() > _len) {
       memcpy(_data + _cur, _msg, _len);
       _cur += _len;
     }

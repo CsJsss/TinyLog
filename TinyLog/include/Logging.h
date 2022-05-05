@@ -8,12 +8,13 @@
  * @copyright Copyright (c) 2022
  *
  */
-#ifndef __TINYLOG_INCLUDE_LOGGING_H_
-#define __TINYLOG_INCLUDE_LOGGING_H_
+#ifndef __INCLUDE_LOGGING_H_
+#define __INCLUDE_LOGGING_H_
 
-#include "include/Timestamp.h"
 #include "include/Buffer.h"
+#include "include/Timestamp.h"
 #include "include/noncopyable.h"
+#include <cstdarg>
 #include <ctime>
 #include <functional>
 #include <mutex>
@@ -98,11 +99,14 @@ public:
   /* 设置日志时间, 使用TLS进行缓存优化 */
   static void formatTime();
 
-  /* 供LOG_*系列宏使用, 将一条日志记录存入LineBuffer中 */
-  template <typename... Args>
+  /* 供LOG_*系列宏使用, 将一条日志记录存入LineBuffer中*/
+  /* FIXME: 由于可变参数模板的实现和分离会导致其他文件include
+   *该.h文件时找到不到模板的具体实现,
+   *而include该.cpp文件时会造成全局变量的多重定义, 因此使用cstdarg头文件中的
+   *va_list、va_arg和va_end等可变参数相关的宏来处理.
+   **/
   void append(const char *file, size_t fileLen, const char *line,
-              size_t lineLen, const char *fmt, Logger::LogLevel level,
-              Args &&...args);
+              size_t lineLen, const char *fmt, Logger::LogLevel level, ...);
 
 private:
   /* Logger 单例变量的声明 */
@@ -117,9 +121,9 @@ private:
   // static thread_local Buffer buffer;
 };
 
-extern Logger::outPutFunc _global_outPutFunc;
-extern Logger::flushFunc _global_flushFunc;
-extern LogConfig kLogConfig;
+// extern Logger::outPutFunc _global_outPutFunc;
+// extern Logger::flushFunc _global_flushFunc;
+// extern LogConfig kLogConfig;
 
 } // namespace TinyLog
 
@@ -151,10 +155,12 @@ extern LogConfig kLogConfig;
       getStr_(__FILE__), getStrLen_(__FILE__), strify_(__LINE__),              \
       getStrLen_(strify_(__LINE__)), fmt, TinyLog::Logger::WARN, args)
 #define LOG_ERROR(fmt, args...)                                                \
-    TinyLog::Logger::getInstance()->append(getStr_(__FILE__), getStrLen_(__FILE__), strify_(__LINE__), getStrLen_(strify_(__LINE__), fmt, TinyLog::Logger::ERROR, args)
+  TinyLog::Logger::getInstance()->append(                                      \
+      getStr_(__FILE__), getStrLen_(__FILE__), strify_(__LINE__),              \
+      getStrLen_(strify_(__LINE__)), fmt, TinyLog::Logger::ERROR, args)
 #define LOG_FATAL(fmt, args...)                                                \
   TinyLog::Logger::getInstance()->append(                                      \
       getStr_(__FILE__), getStrLen_(__FILE__), strify_(__LINE__),              \
       getStrLen_(strify_(__LINE__)), fmt, TinyLog::Logger::FATAL, args)
 
-#endif /* __TINYLOG_INCLUDE_LOGGING_H_ */
+#endif /* __INCLUDE_LOGGING_H_ */

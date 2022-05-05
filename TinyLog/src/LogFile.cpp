@@ -12,20 +12,23 @@
 #include "include/FileWriter.h"
 #include "include/ThreadInfo.h"
 #include <memory>
+#include <string>
 #include <unistd.h> /* gethostname */
 
 namespace TinyLog {
 
 LogFile::LogFile(const std::string &_basename, size_t _rollSize,
-                 int _flushInterval, FileWriterType _fileWriterType)
+                 FileWriterType _fileWriterType)
     : basename_(_basename), rollSize_(_rollSize),
-      flushInterval_(_flushInterval), fileWriterType_(_fileWriterType) {
+      fileWriterType_(_fileWriterType) {
   rollFile();
 }
 
 /* 仅用于日志后台线程, 因此无需加锁 */
 void LogFile::append(const char *_msg, size_t _len) {
   file_->append(_msg, _len);
+  if (file_->writtenBytes() > rollSize_)
+    rollFile();
 }
 
 /* 仅用于日志后台线程, 因此无需加锁 */
@@ -37,6 +40,7 @@ void LogFile::rollFile() {
     file_ = std::make_unique<MmapFileWriter>(newFileName);
   else
     file_ = std::make_unique<NormalFileWriter>(newFileName);
+  // printf("create new file: %s\n", newFileName.c_str());
 }
 
 std::string getHostName() {

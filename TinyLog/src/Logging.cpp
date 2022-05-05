@@ -18,6 +18,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <mutex>
+#include <utility>
 
 namespace TinyLog {
 
@@ -64,9 +65,19 @@ Logger::LogLevel _global_logLevel = defaultLogLevel();
 Logger::outPutFunc _global_outPutFunc = defaultOutput;
 Logger::flushFunc _global_flushFunc = defaultFlush;
 
-inline Logger::LogLevel Logger::getLogLevel() { return kLogConfig.logLevel; }
+void Logger::setOutput(Logger::outPutFunc _func) {
+  _global_outPutFunc = std::move(_func);
+}
 
-inline void Logger::setConfig(const LogConfig &_config) {
+void Logger::setFlush(Logger::flushFunc _func) {
+  _global_flushFunc = std::move(_func);
+}
+
+/* 不能被内联 */
+Logger::LogLevel Logger::getLogLevel() { return kLogConfig.logLevel; }
+
+/* 不能被内联 */
+void Logger::setConfig(const LogConfig &_config) {
   kLogConfig = _config;
 }
 
@@ -83,12 +94,12 @@ inline void Logger::formatTime() {
     struct tm tm_time;
     localtime_r(&curSecond, &tm_time);
 
-    snprintf(timeStr, sizeof(timeStr), "%4d%02d%02d %02d:%02d:%02d-",
+    snprintf(timeStr, sizeof(timeStr), "%4d-%02d-%02d %02d:%02d:%02d-",
              tm_time.tm_year + 1900, tm_time.tm_mon + 1, tm_time.tm_mday,
              tm_time.tm_hour, tm_time.tm_min, tm_time.tm_sec);
   }
   /* 写入日志行缓冲区中: 精确到秒 */
-  buffer.append(timeStr, 18);
+  buffer.append(timeStr, 20);
   /* 写入毫秒 */
   char mStr[6];
   snprintf(mStr, sizeof(mStr), "%03d ", milliSecond);
@@ -96,10 +107,9 @@ inline void Logger::formatTime() {
 }
 
 /* file和line在编译期获取其长度fileLen, lineLen */
-template <typename... Args>
 void Logger::append(const char *file, size_t fileLen, const char *line,
                     size_t lineLen, const char *fmt, Logger::LogLevel level,
-                    Args &&...args) {
+                    ...) {
   /* 处理日志中的时间 */
   formatTime();
 
@@ -118,8 +128,12 @@ void Logger::append(const char *file, size_t fileLen, const char *line,
   buffer.append(LogLevelStr[level], 5);
   buffer.append(": ", 2);
 
-  /* 正文 */
-  int n = snprintf(buffer.current(), buffer.avail() - 1, fmt, args...);
+  /* 正文, 使用va_list、va_arg和va_end等宏来处理, 其原理是
+   * cdelc_ 参数从右到左压栈, 第一个参数在栈顶 */
+  va_list argPtr;
+  va_start(argPtr, fmt);
+  int n = vsnprintf(buffer.current(), buffer.avail(), fmt, argPtr);
+  va_end(argPtr);
   buffer.addLen(static_cast<size_t>(n));
 
   /* appen到outPutfunc */

@@ -20,7 +20,7 @@ thread_local size_t tidStrlen = 0;
 int getTid() {
   if (currentTid == 0) {
     currentTid = ::gettid();
-    tidStrlen = snprintf(tidStr, sizeof(tidStr), "%6d ", currentTid);
+    tidStrlen = static_cast<size_t>(snprintf(tidStr, sizeof(tidStr), "%d ", currentTid));
   }
   return currentTid;
 }

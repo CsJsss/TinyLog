@@ -12,6 +12,7 @@
 #ifndef __TINYLOG_INCLUDE_LOGCONFIG_H_
 #define __TINYLOG_INCLUDE_LOGCONFIG_H_
 
+#include "include/FileWriter.h"
 #include "include/Logging.h"
 
 namespace TinyLog {
@@ -27,7 +28,10 @@ public:
     int flushInterval;
     /* 默认buffer个数 */
     int bufferNums = 4;
+    int maxBuffToWrite = 16;
+
     /* 写文件的具体方式 */
+    FileWriterType fileWriter = NORMALFileWriter;
   };
 
   FileOptions fileOption;
