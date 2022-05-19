@@ -76,7 +76,7 @@ public:
   using Buffer = LogBuffer::FixedBuffer<LogBuffer::kLineBuff>;
 
   /* Logger的输出函数*/
-  using outPutFunc = std::function<void(const char *, size_t)>;
+  using outPutFunc = std::function<void(const char *, size_t, size_t)>;
   /* Logger的落盘函数*/
   using flushFunc = std::function<void()>;
 
@@ -108,12 +108,23 @@ public:
   void append(const char *file, size_t fileLen, const char *line,
               size_t lineLen, const char *fmt, Logger::LogLevel level, ...);
 
+  /*内部类 用于回收单例Logger资源 */
+  struct GC {
+    GC() = default;
+    ~GC() {
+      if (_logger)
+        delete _logger;
+    }
+  };
+
 private:
   /* Logger 单例变量的声明 */
   static Logger *_logger;
   static std::mutex _mtx;
   Logger() = default;
   ~Logger() = default;
+
+  static GC gcVariable;
 
   /* 线程局部变量, 对日期和时间部分进行缓存, 每个线程拥有独立的缓存*/
   // static thread_local time_t prevSecond;

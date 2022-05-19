@@ -11,6 +11,9 @@
 
 /*计数器类, cpp20后可以使用信号量*/
 
+#ifndef __TINYLOG_INCLUDE_COUNTDOWNLATCH_H_
+#define __TINYLOG_INCLUDE_COUNTDOWNLATCH_H_
+
 #include "include/noncopyable.h"
 #include <condition_variable>
 #include <mutex>
@@ -35,3 +38,6 @@ private:
 };
 
 } // namespace TinyLog
+
+
+#endif /* __TINYLOG_INCLUDE_COUNTDOWNLATCH_H_ */

@@ -10,9 +10,11 @@
  */
 
 #include "include/Logging.h"
+#include "include/Buffer.h"
 #include "include/LogConfig.h"
 #include "include/ThreadInfo.h"
 #include "include/Timestamp.h"
+#include <cassert>
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
@@ -28,6 +30,9 @@ LogConfig kLogConfig;
 /* Logger 单例变量的定义 */
 Logger *Logger::_logger = nullptr;
 std::mutex Logger::_mtx;
+
+/* 用于回收单例资源 */
+Logger::GC gcVariabel;
 
 /* 线程局部变量, 对日期和时间部分进行缓存, 每个线程拥有独立的缓存*/
 thread_local time_t prevSecond;
@@ -53,7 +58,7 @@ const char *LogLevelStr[Logger::LogLevel::numOfLevels] = {
 };
 
 /* 默认输出路径为stdout */
-inline void defaultOutput(const char *_msg, size_t _len) {
+inline void defaultOutput(const char *_msg, size_t _len, size_t _keyLen = 0) {
   size_t n = fwrite(_msg, 1, _len, stdout);
   (void)n;
 }
@@ -77,9 +82,7 @@ void Logger::setFlush(Logger::flushFunc _func) {
 Logger::LogLevel Logger::getLogLevel() { return kLogConfig.logLevel; }
 
 /* 不能被内联 */
-void Logger::setConfig(const LogConfig &_config) {
-  kLogConfig = _config;
-}
+void Logger::setConfig(const LogConfig &_config) { kLogConfig = _config; }
 
 /* 设置日志时间, 使用TLS进行缓存优化 */
 inline void Logger::formatTime() {
@@ -128,6 +131,7 @@ void Logger::append(const char *file, size_t fileLen, const char *line,
   buffer.append(LogLevelStr[level], 5);
   buffer.append(": ", 2);
 
+  // size_t keyLen = buffer.size();
   /* 正文, 使用va_list、va_arg和va_end等宏来处理, 其原理是
    * cdelc_ 参数从右到左压栈, 第一个参数在栈顶 */
   va_list argPtr;
@@ -137,12 +141,17 @@ void Logger::append(const char *file, size_t fileLen, const char *line,
   buffer.addLen(static_cast<size_t>(n));
 
   /* appen到outPutfunc */
-  _global_outPutFunc(buffer.data(), buffer.size());
+  /* used for BenchMark*/
+  // if (_global_outPutFunc != nullptr)
+  size_t keyLen = buffer.size();
+    _global_outPutFunc(buffer.data(), buffer.size(), keyLen);
+  assert(buffer.size() < static_cast<size_t>(LogBuffer::kLineBuff));
   /* 缓冲区清空, 等待线程下一条日志记录, 因为其是TLS变量*/
   buffer.clear();
   /* 学习muduo的做法 */
   if (level == Logger::FATAL) {
-    _global_flushFunc();
+    // if (_global_flushFunc)
+      _global_flushFunc();
     abort();
   }
 }

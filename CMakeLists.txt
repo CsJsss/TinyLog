@@ -6,7 +6,8 @@ enable_testing()
 
 add_subdirectory(TinyLog TinyLog/build/lib)
 
-add_executable(AsynLog main.cpp)
+add_executable(AsynLog test_leveldb.cpp)
+# add_executable(AsynLog scan_leveldblog.cpp)
 
 
 # 包含-pthread

@@ -1,12 +1,12 @@
 /**
  * @file buffer.h
  * @author Jsss (764527108@qq.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-02
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 #ifndef __TINYLOG_INCLUDE_BUFFER_H_
 #define __TINYLOG_INCLUDE_BUFFER_H_

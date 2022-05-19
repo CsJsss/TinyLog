@@ -28,21 +28,7 @@ public:
 };
 
 /* 目前实现的 FileUtilType */
-enum FileWriterType { MMAPFileWriter = 0, NORMALFileWriter };
-
-class MmapFileWriter : public FileWriter {
-public:
-  explicit MmapFileWriter(const std::string &_fileName);
-  ~MmapFileWriter() override;
-
-  /* 重写 */
-  void append(const char *_msg, size_t _len) override;
-  void flush() override;
-  size_t writtenBytes() const override;
-
-private:
-};
-
+enum FileWriterType { NORMALFileWriter = 0 };
 class NormalFileWriter : public FileWriter {
 public:
   explicit NormalFileWriter(const std::string &_fileName);

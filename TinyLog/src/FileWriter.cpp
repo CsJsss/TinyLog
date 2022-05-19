@@ -9,6 +9,7 @@
  *
  */
 #include "include/FileWriter.h"
+#include <cassert>
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
@@ -18,12 +19,15 @@
 namespace TinyLog {
 
 /* 构造函数根据文件名新建位于当前路径的文件 */
-NormalFileWriter::NormalFileWriter(
-    const std::string &_fileName) : fp_(::fopen(_fileName.c_str(), "we")) { /*FILE mode : we */
+NormalFileWriter::NormalFileWriter(const std::string &_fileName)
+    { /*FILE mode : we */
+  // printf("path = %s\n", _fileName.c_str());
+  fp_ = ::fopen(_fileName.c_str(), "w");
   if (fp_ == nullptr) {
+    perror("NormalFileWriter open file failed: ");
     int err = ferror(fp_);
-    fprintf(stderr, "NormalFileWriter open file: %s failed, errno: %d\n",
-            _fileName.c_str(), err);
+    fprintf(stderr, "NormalFileWriter open file: %s failed, errno: %s\n",
+            _fileName.c_str(), strerror(err));
     abort();
   }
   ::setbuffer(fp_, buffer_, sizeof(buffer_));
@@ -59,18 +63,5 @@ void NormalFileWriter::append(const char *_msg, size_t _len) {
 
 void NormalFileWriter::flush() { fflush(fp_); }
 size_t NormalFileWriter::writtenBytes() const { return writen_; }
-
-// TODO: MmapMmapFileWriter funcitons
-
-/* 构造函数根据文件名新建位于当前路径的文件 */
-MmapFileWriter::MmapFileWriter(const std::string &_fileName) {}
-
-/* 析构函数关闭文件描述符 */
-MmapFileWriter::~MmapFileWriter() {}
-
-void MmapFileWriter::append(const char *_msg, size_t _len) {}
-
-void MmapFileWriter::flush() {}
-size_t MmapFileWriter::writtenBytes() const { return 0; }
 
 } // namespace TinyLog

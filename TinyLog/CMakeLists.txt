@@ -33,14 +33,6 @@ set(CMAKE_CXX_STANDARD 17)
 # 生成 compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS True)
 
-# 设置打印日志等级
-set(ENV{TINY_LOG_TRACE} "TRUE")
-
-# 判断TINY_LOG_TRACE环境变量是否定义
-if(DEFINED ENV{TINY_LOG_TRACE})
-    message("TINY_LOG_TRACE: $ENV{TINY_LOG_TRACE}")
-endif()
-
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
@@ -50,6 +42,11 @@ MESSAGE( STATUS "PROJECT_SOURCE_DIR = ${PROJECT_SOURCE_DIR}.")
 MESSAGE( STATUS "PROJECT_BINARY_DIR = ${PROJECT_BINARY_DIR}.")
 MESSAGE( STATUS "SOURCES = ${sources}.")
 
+# 设置LevelDB的 include path 和 binary path
+SET(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} "/home1/jsj/Code/cpp/projects/leveldb/include/")
+SET(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} "/home1/jsj/Code/cpp/projects/leveldb/build/libleveldb.a")
+
 # 静态库
 add_library(TinyLog STATIC ${sources})
-target_include_directories(TinyLog PUBLIC ${PROJECT_SOURCE_DIR})
+target_include_directories(TinyLog PUBLIC ${PROJECT_SOURCE_DIR} ${CMAKE_INCLUDE_PATH})
+target_link_libraries(TinyLog ${CMAKE_LIBRARY_PATH})

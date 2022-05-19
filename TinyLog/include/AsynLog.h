@@ -39,11 +39,8 @@ public:
 
   ~AsynLog() ;
 
-  /* 静态方式设置LogConfig */
-  static void setConfig(const LogConfig &);
-
   /* 前端和后端的唯一接口 */
-  void append(const char *_msg, size_t _len);
+  void append(const char *_msg, size_t _len, size_t keyLen = 0);
 
   void start() {
     // assert(started_ == false);

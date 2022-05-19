@@ -11,6 +11,8 @@
 #include "include/LogFile.h"
 #include "include/FileWriter.h"
 #include "include/ThreadInfo.h"
+#include <cstdio>
+#include <cstdlib>
 #include <memory>
 #include <string>
 #include <unistd.h> /* gethostname */
@@ -36,11 +38,12 @@ void LogFile::flush() { file_->flush(); }
 
 void LogFile::rollFile() {
   std::string newFileName = getLogFileName(basename_);
-  if (fileWriterType_ == MMAPFileWriter)
-    file_ = std::make_unique<MmapFileWriter>(newFileName);
-  else
+  if (fileWriterType_ == NORMALFileWriter)
     file_ = std::make_unique<NormalFileWriter>(newFileName);
-  // printf("create new file: %s\n", newFileName.c_str());
+  else {
+    fprintf(stderr, "UnknowFileWriterType \n");
+    abort();
+  }
 }
 
 std::string getHostName() {

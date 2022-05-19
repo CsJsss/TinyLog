@@ -13,25 +13,20 @@
 #include "include/Logging.h"
 #include <cassert>
 #include <chrono>
+#include <cstddef>
 #include <memory>
 #include <mutex>
 #include <type_traits>
 
 namespace TinyLog {
 
-/* 用于异步日志的config */
-// LogConfig kLogConfig;
-
-/* 设置config, config的优先级弱于AsynLog的构造函数,
- * 其会被AsynLog构造函数的参数覆盖 */
-void AsynLog::setConfig(const LogConfig &_cfg) { kLogConfig = _cfg; }
-
 AsynLog::AsynLog(const std::string &_basename, size_t _rollSize,
                  int _flushInterval, int _bufferNums,
                  FileWriterType _writerType)
     : basename_(_basename), rollSize_(_rollSize),
       flushInterval_(_flushInterval), started_(false), counter_(1),
-      bufferSize_(_bufferNums), writerType_(_writerType), head(std::make_shared<BufferNode>()),
+      bufferSize_(_bufferNums), writerType_(_writerType),
+      head(std::make_shared<BufferNode>()),
       tail(std::make_shared<BufferNode>()) {
   /* 初始化 head 和 tail 的指针域*/
   head->next_ = tail;
@@ -48,16 +43,23 @@ AsynLog::~AsynLog() {
   //   delete cur;
   //   cur = nxt;
   // }
+  /* shared_ptr节点会造成循环引用而导致无法释放, 因此手动释放 */
+  BufferNodePtr cur = head;
+  while (cur != nullptr) {
+    BufferNodePtr nxt = cur->next_;
+    cur->prev_ = cur->next_ = nullptr;
+    cur = nxt;
+  }
 }
 
 AsynLog::BufferNodePtr AsynLog::newBufferNode() {
-  auto cur = std::make_shared<BufferNode>();
+  BufferNodePtr cur = std::make_shared<BufferNode>();
   cur->buff_ = std::make_unique<Buffer>();
   return cur;
 }
 
 /* 前端和后端的唯一接口 */
-void AsynLog::append(const char *_msg, size_t _len) {
+void AsynLog::append(const char *_msg, size_t _len, size_t keyLen) {
   /* RAII lock */
   std::unique_lock<std::mutex> lock(mtx_);
   std::unique_ptr<Buffer> &curBuff = curBuffNode->buff_;
@@ -76,7 +78,7 @@ void AsynLog::append(const char *_msg, size_t _len) {
 
   /* 如果无空余缓冲, 则新建缓冲区 BufferNode, 并加入环形缓冲区中 */
   if (bufferSize_ == 0) {
-    auto newNode = newBufferNode();
+    BufferNodePtr newNode = newBufferNode();
     addTail(newNode);
     bufferSize_ += 1;
   }
@@ -105,8 +107,6 @@ void AsynLog::threadFunc() {
   LogFile fileWriter(basename_, rollSize_, writerType_);
 
   while (started_) {
-    assert(writeBufferNode.size() == 0);
-    assert(curBuffNode == head->next_);
     /* RAII lock block */
     {
       std::unique_lock<std::mutex> lock(mtx_);

@@ -22,10 +22,10 @@ public:
   Logger::LogLevel logLevel = Logger::INFO;
 
   struct FileOptions {
-    std::string baseName;
+    std::string baseName = "must_can't_be_null";
     /* 日志滚动大小和刷盘间隔, 用于AsynLog */
-    size_t rooSize;
-    int flushInterval;
+    size_t rooSize = 1024 * 1024 ;
+    int flushInterval = 3;
     /* 默认buffer个数 */
     int bufferNums = 4;
     int maxBuffToWrite = 16;
